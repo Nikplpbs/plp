@@ -1,1 +1,190 @@
+// Configuration
+const STAFF_PASSWORD = "71120223"; // Staff-only password
 
+const TIER_THRESHOLDS = { Silver: 0, Gold: 500, Black: 1000 };
+const BADGE_THRESHOLDS = [
+  { points: 50, name: "First Coffee" },
+  { points: 150, name: "Coffee Lover" },
+  { points: 600, name: "Black Coffee Fan" }
+];
+
+const COUPONS_BY_TIER = {
+  Silver: {},
+  Gold: { freeUpsize: 1, freeBakery: 1 },
+  Black: { freeUpsize: 2, freeBakery: 2, buy1Get1: 1 }
+};
+
+const STREAK_BONUS = {
+  1: 0,
+  2: 0,
+  3: 10,
+  4: 0,
+  5: 20,
+  6: 30,
+  7: "x2"
+};
+
+// --- Handle requests ---
+function handleRequest(e) {
+  // Parse parameters
+  let params;
+  if (e.postData && e.postData.contents) {
+    try { params = JSON.parse(e.postData.contents); }
+    catch (err) { return createOutput({ error: 'Invalid JSON' }, e); }
+  } else if (e.parameter) { params = e.parameter; }
+  else { return createOutput({ error: 'No parameters found' }, e); }
+
+  const userId = (params.userId || "").toString();
+  let name = (params.name || "").toString().trim();
+  const action = (params.action || "").toString();
+  const password = (params.password || "").toString();
+  const pointsToAdd = Number(params.points || 0);
+  const claimCouponKey = (params.claimCoupon || "").toString();
+
+  if (!name || name.toLowerCase() === "noname") name = null;
+  if (!userId) return createOutput({ error: "Missing userId parameter" }, e);
+
+  // --- Sheet setup ---
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetName = "Members";
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    sheet.getRange(1,1,1,9).setValues([["userId","name","points","tier","badges","coupons","streakDay","lastPurchaseDate","couponClaimed"]]);
+  }
+
+  // Ensure headers include couponClaimed
+  let headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(h => h.toString());
+  let normalized = headers.map(h => h.trim().toLowerCase().replace(/\s+/g,''));
+  if (normalized.indexOf('couponclaimed') === -1) {
+    sheet.getRange(1, sheet.getLastColumn() + 1).setValue('couponClaimed');
+    headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(h => h.toString());
+    normalized = headers.map(h => h.trim().toLowerCase().replace(/\s+/g,''));
+  }
+  const cols = {};
+  normalized.forEach((h,i) => cols[h] = i+1);
+
+  // Read data rows
+  const lastRow = sheet.getLastRow();
+  const dataRangeCount = Math.max(0, lastRow - 1);
+  const data = dataRangeCount > 0 ? sheet.getRange(2,1,dataRangeCount,headers.length).getValues() : [];
+
+  // Find or create user row
+  let foundIndex = data.findIndex(r => r[0] === userId);
+  let userRowNumber;
+  if (foundIndex === -1) {
+    const newRow = new Array(headers.length).fill("");
+    if (cols['userid']) newRow[cols['userid']-1] = userId;
+    if (cols['name']) newRow[cols['name']-1] = name || "";
+    if (cols['points']) newRow[cols['points']-1] = 0;
+    if (cols['tier']) newRow[cols['tier']-1] = "Silver";
+    if (cols['badges']) newRow[cols['badges']-1] = "";
+    if (cols['coupons']) newRow[cols['coupons']-1] = JSON.stringify(COUPONS_BY_TIER["Silver"]);
+    if (cols['streakday']) newRow[cols['streakday']-1] = 0;
+    if (cols['lastpurchasedate']) newRow[cols['lastpurchasedate']-1] = "";
+    if (cols['couponclaimed']) newRow[cols['couponclaimed']-1] = JSON.stringify([]);
+    sheet.appendRow(newRow);
+    userRowNumber = sheet.getLastRow();
+  } else {
+    userRowNumber = foundIndex + 2;
+    const existingName = data[foundIndex][(cols['name']||2)-1] || "";
+    if (name && existingName !== name) sheet.getRange(userRowNumber, cols['name']).setValue(name);
+  }
+
+  // Read full user row
+  let userData = sheet.getRange(userRowNumber,1,1,headers.length).getValues()[0];
+  let points = Number(userData[(cols['points']||3)-1]) || 0;
+  let oldTier = userData[(cols['tier']||4)-1] || "Silver";
+  let streakDay = Number(userData[(cols['streakday']||7)-1]) || 0;
+  let lastPurchaseDate = userData[(cols['lastpurchasedate']||8)-1] || "";
+  let coupons = userData[(cols['coupons']||6)-1] ? JSON.parse(userData[(cols['coupons']||6)-1]) : {};
+  let couponClaimedArr = (cols['couponclaimed'] && userData[cols['couponclaimed']-1]) ? JSON.parse(userData[cols['couponclaimed']-1]) : [];
+
+  // --- Action logic ---
+  if (action === "record_purchase") {
+    if (password !== STAFF_PASSWORD) return createOutput({ error: "Invalid password. Purchase not recorded." }, e);
+    if (pointsToAdd > 0) {
+      streakDay = streakDay + 1;
+      if (streakDay > 7) streakDay = 1;
+
+      let bonus = STREAK_BONUS[streakDay];
+      let addedPoints = pointsToAdd;
+      if (bonus === "x2") addedPoints *= 2;
+      else addedPoints += bonus;
+
+      points += addedPoints;
+      lastPurchaseDate = getTodayString();
+    }
+  }
+
+  // --- Claim coupon action ---
+  if (claimCouponKey) {
+    if (coupons && coupons[claimCouponKey] && Number(coupons[claimCouponKey]) > 0) {
+      coupons[claimCouponKey] = Number(coupons[claimCouponKey]) - 1;
+      if (coupons[claimCouponKey] <= 0) delete coupons[claimCouponKey];
+      couponClaimedArr.push({ coupon: claimCouponKey, date: getTodayString(), status: "redeemed" });
+    } else {
+      couponClaimedArr.push({ coupon: claimCouponKey, date: getTodayString(), status: "failed" });
+    }
+  }
+
+  // --- Recalculate tier ---
+  let tier = "Silver";
+  if (points >= TIER_THRESHOLDS.Black) tier = "Black";
+  else if (points >= TIER_THRESHOLDS.Gold) tier = "Gold";
+
+  // Refresh coupons if tier upgraded
+  if (tier !== oldTier && Object.keys(COUPONS_BY_TIER[tier] || {}).length > 0) {
+    coupons = JSON.parse(JSON.stringify(COUPONS_BY_TIER[tier]));
+  }
+
+  // --- Recalculate badges ---
+  const badges = BADGE_THRESHOLDS.filter(b => points >= b.points).map(b => b.name);
+
+  // --- Update row ---
+  const updatedRow = headers.map((h, idx) => {
+    const nh = h.trim().toLowerCase().replace(/\s+/g,'');
+    if (nh === 'userid') return userId;
+    if (nh === 'name') return name || "";
+    if (nh === 'points') return points;
+    if (nh === 'tier') return tier;
+    if (nh === 'badges') return badges.join(", ");
+    if (nh === 'coupons') return JSON.stringify(coupons);
+    if (nh === 'streakday') return streakDay;
+    if (nh === 'lastpurchasedate') return lastPurchaseDate;
+    if (nh === 'couponclaimed') return JSON.stringify(couponClaimedArr);
+    return userData[idx];
+  });
+  sheet.getRange(userRowNumber,1,1,headers.length).setValues([updatedRow]);
+
+  // --- Return output ---
+  return createOutput({
+    userId: userId,
+    name: name || "",
+    points: points,
+    tier: tier,
+    badges: badges.join(", "),
+    coupons: coupons,
+    streakDay: streakDay,
+    lastPurchaseDate: lastPurchaseDate,
+    couponClaimed: couponClaimedArr,
+    lastClaimedCoupon: couponClaimedArr.length ? couponClaimedArr[couponClaimedArr.length-1].coupon : null
+  }, e);
+}
+
+// --- Utilities ---
+function getTodayString() {
+  const tz = Session.getScriptTimeZone();
+  const now = new Date();
+  return Utilities.formatDate(now, tz, "yyyy-MM-dd");
+}
+
+function createOutput(obj,e) {
+  const callback = e && e.parameter && e.parameter.callback;
+  const output = JSON.stringify(obj);
+  if (callback) return ContentService.createTextOutput(`${callback}(${output})`).setMimeType(ContentService.MimeType.JAVASCRIPT);
+  else return ContentService.createTextOutput(output).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e){ return handleRequest(e); }
+function doPost(e){ return handleRequest(e); }
