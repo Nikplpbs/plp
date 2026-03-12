@@ -1,237 +1,274 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เลือกสาขา</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-const branches = [
-  { id: 85, name: "สรรพาวุธ-บางนา (KS)" },
-  { id: 419, name: "มอลทาเล่ย์" },
-  { id: 5552, name: "คลองสวน" },
-  { id: 5605, name: "สุภาพงษ์1-3 แยก 3" },
-  { id: 8789, name: "ม.เมืองแก้ว" },
-  { id: 9687, name: "ตลาดทรัพย์บุญชัย" },
-  { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)" },
-  { id: 13327, name: "สุขุมวิท 64 จุด 2" },
-  { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)" },
-  { id: 13544, name: "ลาดกระบัง 14 / 1" },
-  { id: 14748, name: "กลางซอยศรีด่าน 22" },
-  { id: 15100, name: "อ่อนนุช 30 (กลางซอย)" },
-  { id: 16070, name: "อ่อนนุช 46 (กลางซอย)" },
-  { id: 16864, name: "พัฒนาการ 44" },
-  { id: 17196, name: "สวนส้ม จุด 2" },
-  { id: 18232, name: "ปุณณวิถี 25" },
-  { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2" },
-  { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน" },
-  { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)" },
-  { id: 19243, name: "ซอยสุนทรวิภาค จุด 2" },
-];
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f9ff 0%, #fefce8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
 
-const STARRED = [5605, 18232];
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 32px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+      max-width: 740px;
+      width: 100%;
+    }
 
-export default function BranchSelector() {
-  const [selected, setSelected] = useState(null);
-  const [starred, setStarred] = useState(new Set(STARRED));
-  const [search, setSearch] = useState("");
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
 
-  const toggleStar = (e, id) => {
-    e.stopPropagation();
-    setStarred((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+    .header-icon { font-size: 36px; }
 
-  const filtered = branches.filter(
-    (b) =>
-      String(b.id).includes(search) ||
-      b.name.toLowerCase().includes(search.toLowerCase())
-  );
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+    }
 
-  return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <span style={styles.headerIcon}>🏪</span>
-          <div>
-            <h2 style={styles.title}>เลือกสาขาที่ต้องดูแลพิเศษ</h2>
-            <p style={styles.subtitle}>
-              {selected
-                ? `✅ เลือกแล้ว: ${selected.id} — ${selected.name}`
-                : "กรุณาเลือก 1 สาขา"}
-            </p>
-          </div>
-        </div>
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
 
-        <input
-          style={styles.search}
-          placeholder="🔍  ค้นหาสาขา..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+    .search {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      font-size: 14px;
+      font-family: 'Sarabun', sans-serif;
+      margin-bottom: 20px;
+      outline: none;
+      background: #f8fafc;
+    }
 
-        <div style={styles.grid}>
-          {filtered.map((b) => {
-            const isSelected = selected?.id === b.id;
-            const isStarred = starred.has(b.id);
-            return (
-              <button
-                key={b.id}
-                onClick={() => setSelected(b)}
-                style={{
-                  ...styles.btn,
-                  ...(isSelected ? styles.btnSelected : {}),
-                  ...(isStarred && !isSelected ? styles.btnStarred : {}),
-                }}
-              >
-                <button
-                  onClick={(e) => toggleStar(e, b.id)}
-                  style={{
-                    ...styles.starBtn,
-                    color: isStarred ? "#f59e0b" : "#d1d5db",
-                  }}
-                  title={isStarred ? "ยกเลิก" : "ติดดาว"}
-                >
-                  ★
-                </button>
-                <span style={styles.branchId}>{b.id}</span>
-                <span style={styles.branchName}>{b.name}</span>
-              </button>
-            );
-          })}
-        </div>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
 
-        {selected && (
-          <div style={styles.footer}>
-            <span>สาขาที่เลือก:</span>
-            <strong style={{ color: "#1d4ed8" }}>
-              {selected.id} — {selected.name}
-            </strong>
-            <button style={styles.confirmBtn}>ยืนยัน →</button>
-          </div>
-        )}
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 12px 14px 12px 36px;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      outline: none;
+      font-family: 'Sarabun', sans-serif;
+    }
+
+    .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .btn.selected {
+      border: 2px solid #f59e0b;
+      background: #fffbeb;
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+    }
+
+    .btn.starred:not(.selected) {
+      border: 1.5px solid #fcd34d;
+      background: #fffef5;
+    }
+
+    .star-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      color: #d1d5db;
+      transition: color 0.15s;
+    }
+
+    .star-btn.on { color: #f59e0b; }
+
+    .branch-id {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+
+    .branch-name {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .footer {
+      margin-top: 20px;
+      padding: 14px 18px;
+      background: #eff6ff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #334155;
+      flex-wrap: wrap;
+    }
+
+    .footer strong { color: #1d4ed8; }
+
+    .confirm-btn {
+      margin-left: auto;
+      padding: 8px 20px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: 'Sarabun', sans-serif;
+      cursor: pointer;
+    }
+
+    .confirm-btn:hover { background: #1d4ed8; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <span class="header-icon">🏪</span>
+      <div>
+        <div class="title">เลือกสาขาที่ต้องดูแลพิเศษ</div>
+        <div class="subtitle" id="subtitle">กรุณาเลือก 1 สาขา</div>
       </div>
     </div>
-  );
-}
 
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #f0f9ff 0%, #fefce8 100%)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "'Sarabun', 'Noto Sans Thai', sans-serif",
-    padding: "24px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "28px 32px",
-    boxShadow: "0 8px 40px rgba(0,0,0,0.10)",
-    maxWidth: "740px",
-    width: "100%",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: "14px",
-    marginBottom: "20px",
-  },
-  headerIcon: { fontSize: "36px" },
-  title: {
-    margin: 0,
-    fontSize: "20px",
-    fontWeight: 700,
-    color: "#1e293b",
-  },
-  subtitle: {
-    margin: "4px 0 0",
-    fontSize: "13px",
-    color: "#64748b",
-  },
-  search: {
-    width: "100%",
-    padding: "10px 16px",
-    borderRadius: "12px",
-    border: "1.5px solid #e2e8f0",
-    fontSize: "14px",
-    marginBottom: "20px",
-    outline: "none",
-    boxSizing: "border-box",
-    background: "#f8fafc",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "10px",
-  },
-  btn: {
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "12px 14px 12px 36px",
-    borderRadius: "14px",
-    border: "1.5px solid #e2e8f0",
-    background: "#f8fafc",
-    cursor: "pointer",
-    textAlign: "left",
-    transition: "all 0.15s ease",
-    outline: "none",
-  },
-  btnSelected: {
-    border: "2px solid #f59e0b",
-    background: "#fffbeb",
-    boxShadow: "0 0 0 3px rgba(245,158,11,0.15)",
-  },
-  btnStarred: {
-    border: "1.5px solid #fcd34d",
-    background: "#fffef5",
-  },
-  starBtn: {
-    position: "absolute",
-    top: "10px",
-    left: "10px",
-    background: "none",
-    border: "none",
-    fontSize: "16px",
-    cursor: "pointer",
-    padding: 0,
-    lineHeight: 1,
-    transition: "color 0.15s",
-  },
-  branchId: {
-    fontSize: "15px",
-    fontWeight: 700,
-    color: "#1e293b",
-    lineHeight: 1.3,
-  },
-  branchName: {
-    fontSize: "11px",
-    color: "#64748b",
-    marginTop: "2px",
-    lineHeight: 1.4,
-  },
-  footer: {
-    marginTop: "20px",
-    padding: "14px 18px",
-    background: "#eff6ff",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    fontSize: "14px",
-    color: "#334155",
-    flexWrap: "wrap",
-  },
-  confirmBtn: {
-    marginLeft: "auto",
-    padding: "8px 20px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "10px",
-    fontWeight: 600,
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-};
+    <input class="search" id="searchInput" placeholder="🔍  ค้นหาสาขา..." oninput="filterBranches()" />
+
+    <div class="grid" id="grid"></div>
+
+    <div class="footer hidden" id="footer">
+      <span>สาขาที่เลือก:</span>
+      <strong id="footerText"></strong>
+      <button class="confirm-btn" onclick="confirmSelection()">ยืนยัน →</button>
+    </div>
+  </div>
+
+  <script>
+    const branches = [
+      { id: 85,    name: "สรรพาวุธ-บางนา (KS)" },
+      { id: 419,   name: "มอลทาเล่ย์" },
+      { id: 5552,  name: "คลองสวน" },
+      { id: 5605,  name: "สุภาพงษ์1-3 แยก 3" },
+      { id: 8789,  name: "ม.เมืองแก้ว" },
+      { id: 9687,  name: "ตลาดทรัพย์บุญชัย" },
+      { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)" },
+      { id: 13327, name: "สุขุมวิท 64 จุด 2" },
+      { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)" },
+      { id: 13544, name: "ลาดกระบัง 14 / 1" },
+      { id: 14748, name: "กลางซอยศรีด่าน 22" },
+      { id: 15100, name: "อ่อนนุช 30 (กลางซอย)" },
+      { id: 16070, name: "อ่อนนุช 46 (กลางซอย)" },
+      { id: 16864, name: "พัฒนาการ 44" },
+      { id: 17196, name: "สวนส้ม จุด 2" },
+      { id: 18232, name: "ปุณณวิถี 25" },
+      { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2" },
+      { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน" },
+      { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)" },
+      { id: 19243, name: "ซอยสุนทรวิภาค จุด 2" },
+    ];
+
+    let starred = new Set([5605, 18232]);
+    let selectedId = null;
+
+    function renderGrid(list) {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      list.forEach(b => {
+        const isSelected = selectedId === b.id;
+        const isStarred  = starred.has(b.id);
+
+        const btn = document.createElement("button");
+        btn.className = "btn" + (isSelected ? " selected" : "") + (isStarred ? " starred" : "");
+        btn.onclick = () => selectBranch(b);
+
+        const starBtn = document.createElement("button");
+        starBtn.className = "star-btn" + (isStarred ? " on" : "");
+        starBtn.textContent = "★";
+        starBtn.title = isStarred ? "ยกเลิก" : "ติดดาว";
+        starBtn.onclick = (e) => { e.stopPropagation(); toggleStar(b.id); };
+
+        const idSpan = document.createElement("span");
+        idSpan.className = "branch-id";
+        idSpan.textContent = b.id;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "branch-name";
+        nameSpan.textContent = b.name;
+
+        btn.appendChild(starBtn);
+        btn.appendChild(idSpan);
+        btn.appendChild(nameSpan);
+        grid.appendChild(btn);
+      });
+    }
+
+    function filterBranches() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = branches.filter(b =>
+        String(b.id).includes(q) || b.name.toLowerCase().includes(q)
+      );
+      renderGrid(filtered);
+    }
+
+    function toggleStar(id) {
+      starred.has(id) ? starred.delete(id) : starred.add(id);
+      filterBranches();
+    }
+
+    function selectBranch(b) {
+      selectedId = b.id;
+      document.getElementById("subtitle").textContent = `✅ เลือกแล้ว: ${b.id} — ${b.name}`;
+      document.getElementById("footerText").textContent = `${b.id} — ${b.name}`;
+      document.getElementById("footer").classList.remove("hidden");
+      filterBranches();
+    }
+
+    function confirmSelection() {
+      const b = branches.find(x => x.id === selectedId);
+      if (b) alert(`✅ ยืนยันสาขา:\n${b.id} — ${b.name}`);
+    }
+
+    renderGrid(branches);
+  </script>
+</body>
+</html>
