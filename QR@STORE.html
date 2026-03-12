@@ -88,15 +88,14 @@
 
     .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
 
-    .btn.selected {
-      border: 2px solid #f59e0b;
-      background: #fffbeb;
-      box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
-    }
-
     .btn.starred:not(.selected) {
       border: 1.5px solid #fcd34d;
       background: #fffef5;
+    }
+
+    .btn.no-link {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .star-btn {
@@ -129,24 +128,91 @@
       line-height: 1.4;
     }
 
-    .footer {
-      margin-top: 20px;
-      padding: 14px 18px;
-      background: #eff6ff;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      color: #334155;
-      flex-wrap: wrap;
+    .no-link-badge {
+      font-size: 10px;
+      color: #ef4444;
+      margin-top: 3px;
     }
 
-    .footer strong { color: #1d4ed8; }
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
 
-    .confirm-btn {
-      margin-left: auto;
-      padding: 8px 20px;
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.2s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .modal-id {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    .modal-img-wrap {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .modal-img {
+      width: 100%;
+      max-height: 340px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .modal-loading { color: #94a3b8; font-size: 14px; }
+
+    .modal-open-btn {
+      display: inline-block;
+      padding: 10px 24px;
       background: #2563eb;
       color: #fff;
       border: none;
@@ -155,120 +221,142 @@
       font-size: 14px;
       font-family: 'Sarabun', sans-serif;
       cursor: pointer;
+      text-decoration: none;
     }
 
-    .confirm-btn:hover { background: #1d4ed8; }
-
-    .hidden { display: none; }
+    .modal-open-btn:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <span class="header-icon">🏪</span>
-      <div>
-        <div class="title">เลือกสาขาที่ต้องดูแลพิเศษ</div>
-        <div class="subtitle" id="subtitle">กรุณาเลือก 1 สาขา</div>
-      </div>
-    </div>
 
-    <input class="search" id="searchInput" placeholder="🔍  ค้นหาสาขา..." oninput="filterBranches()" />
-
-    <div class="grid" id="grid"></div>
-
-    <div class="footer hidden" id="footer">
-      <span>สาขาที่เลือก:</span>
-      <strong id="footerText"></strong>
-      <button class="confirm-btn" onclick="confirmSelection()">ยืนยัน →</button>
+<div class="card">
+  <div class="header">
+    <span class="header-icon">🏪</span>
+    <div>
+      <div class="title">เลือกสาขาที่ต้องดูแลพิเศษ</div>
+      <div class="subtitle">กดที่สาขาเพื่อดูรูปภาพ QR Code</div>
     </div>
   </div>
 
-  <script>
-    const branches = [
-      { id: 85,    name: "สรรพาวุธ-บางนา (KS)" },
-      { id: 419,   name: "มอลทาเล่ย์" },
-      { id: 5552,  name: "คลองสวน" },
-      { id: 5605,  name: "สุภาพงษ์1-3 แยก 3" },
-      { id: 8789,  name: "ม.เมืองแก้ว" },
-      { id: 9687,  name: "ตลาดทรัพย์บุญชัย" },
-      { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)" },
-      { id: 13327, name: "สุขุมวิท 64 จุด 2" },
-      { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)" },
-      { id: 13544, name: "ลาดกระบัง 14 / 1" },
-      { id: 14748, name: "กลางซอยศรีด่าน 22" },
-      { id: 15100, name: "อ่อนนุช 30 (กลางซอย)" },
-      { id: 16070, name: "อ่อนนุช 46 (กลางซอย)" },
-      { id: 16864, name: "พัฒนาการ 44" },
-      { id: 17196, name: "สวนส้ม จุด 2" },
-      { id: 18232, name: "ปุณณวิถี 25" },
-      { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2" },
-      { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน" },
-      { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)" },
-      { id: 19243, name: "ซอยสุนทรวิภาค จุด 2" },
-    ];
+  <input class="search" id="searchInput" placeholder="🔍  ค้นหาสาขา..." oninput="filterBranches()" />
 
-    let starred = new Set([5605, 18232]);
-    let selectedId = null;
+  <div class="grid" id="grid"></div>
+</div>
 
-    function renderGrid(list) {
-      const grid = document.getElementById("grid");
-      grid.innerHTML = "";
-      list.forEach(b => {
-        const isSelected = selectedId === b.id;
-        const isStarred  = starred.has(b.id);
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalName"></div>
+    <div class="modal-id"   id="modalId"></div>
+    <div class="modal-img-wrap" id="modalImgWrap">
+      <span class="modal-loading">กำลังโหลด...</span>
+    </div>
+    <a class="modal-open-btn" id="modalLink" href="#" target="_blank">🔗 เปิดใน Google Drive</a>
+  </div>
+</div>
 
-        const btn = document.createElement("button");
-        btn.className = "btn" + (isSelected ? " selected" : "") + (isStarred ? " starred" : "");
-        btn.onclick = () => selectBranch(b);
+<script>
+  const branches = [
+    { id: 85,    name: "สรรพาวุธ-บางนา (KS)",                   fileId: "1dIVsZ3ylK-F4uRhOyJvQOQbdncxYF_in" },
+    { id: 419,   name: "มอลทาเล่ย์",                             fileId: "18VmgNqpgrTlC1pc_uYCg4EDmAW_yujbT" },
+    { id: 5552,  name: "คลองสวน",                                fileId: "1Bmv8yNPYsERWNq9NnSQuYHXoPOhIoY3P" },
+    { id: 5605,  name: "สุภาพงษ์1-3 แยก 3",                     fileId: "1Nfw9vLqw5xPOBM6Q7_3Lo9bkruWhhrh7" },
+    { id: 8789,  name: "ม.เมืองแก้ว",                           fileId: "1Uw-XFF-nwjZkBSizg2vxYVVuIWV_jZ8U" },
+    { id: 9687,  name: "ตลาดทรัพย์บุญชัย",                      fileId: "1___hPDBGgG04-6dEZiWJ_mL-1VlcRoE5" },
+    { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)",         fileId: "1NqjSY2NP2cFTq3CEnFUDUcQnyZGn5ie8" },
+    { id: 13327, name: "สุขุมวิท 64 จุด 2",                     fileId: null },
+    { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)",                fileId: "1IO9M_zi0wjpesOAuhCLsPOACkW9EQjV6" },
+    { id: 13544, name: "ลาดกระบัง 14 / 1",                      fileId: "1F95Ar35yyxFFXxvjfNj2O5NKi7Xqyiel" },
+    { id: 14748, name: "กลางซอยศรีด่าน 22",                     fileId: "12-bUtvMZaPLI4i_iDzCHTc-7KzX03y_U" },
+    { id: 15100, name: "อ่อนนุช 30 (กลางซอย)",                  fileId: "1sO8tvgSVYgd5pEuMtbjnF4WCX6WN3nNH" },
+    { id: 16070, name: "อ่อนนุช 46 (กลางซอย)",                  fileId: "1kNkok0iYZtB6P2Padauw_kozrFMRNgcM" },
+    { id: 16864, name: "พัฒนาการ 44",                            fileId: "1gUDqof2VITFN6mJac9QBhrnP_lHFDhwm" },
+    { id: 17196, name: "สวนส้ม จุด 2",                          fileId: "1ujNmWE1cF-v2ClSV0Kk2wMP9ASvdXnz1" },
+    { id: 18232, name: "ปุณณวิถี 25",                            fileId: "1VbF3VnDbSBtcVidA9iRqNOE_SSZQDDTk" },
+    { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2",              fileId: "1ibPaTLMbNsuLIyxeC2QJq2U1TmmCdnDo" },
+    { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน", fileId: "1As0xnGS4y2Pq8UAIn7I29aEqFQ8H1G4K" },
+    { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)",      fileId: "11YdSslRQmEPdktb34hiqaY5LKCmdGLmB" },
+    { id: 19243, name: "ซอยสุนทรวิภาค จุด 2",                   fileId: "17gbc5FGGPvDXkXcv4sNIAKcAuSqNZv3Z" },
+  ];
 
-        const starBtn = document.createElement("button");
-        starBtn.className = "star-btn" + (isStarred ? " on" : "");
-        starBtn.textContent = "★";
-        starBtn.title = isStarred ? "ยกเลิก" : "ติดดาว";
-        starBtn.onclick = (e) => { e.stopPropagation(); toggleStar(b.id); };
+  const starred = new Set([5605, 18232]);
 
-        const idSpan = document.createElement("span");
-        idSpan.className = "branch-id";
-        idSpan.textContent = b.id;
+  function thumbUrl(id) { return `https://drive.google.com/thumbnail?id=${id}&sz=w600`; }
+  function viewUrl(id)  { return `https://drive.google.com/file/d/${id}/view`; }
 
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "branch-name";
-        nameSpan.textContent = b.name;
+  function renderGrid(list) {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    list.forEach(b => {
+      const isStarred = starred.has(b.id);
+      const btn = document.createElement("button");
+      btn.className = "btn" + (isStarred ? " starred" : "") + (!b.fileId ? " no-link" : "");
+      if (b.fileId) btn.onclick = () => openModal(b);
 
-        btn.appendChild(starBtn);
-        btn.appendChild(idSpan);
-        btn.appendChild(nameSpan);
-        grid.appendChild(btn);
-      });
-    }
+      const starBtn = document.createElement("button");
+      starBtn.className = "star-btn" + (isStarred ? " on" : "");
+      starBtn.textContent = "★";
+      starBtn.onclick = (e) => { e.stopPropagation(); toggleStar(b.id); };
 
-    function filterBranches() {
-      const q = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = branches.filter(b =>
-        String(b.id).includes(q) || b.name.toLowerCase().includes(q)
-      );
-      renderGrid(filtered);
-    }
+      const idSpan   = document.createElement("span");
+      idSpan.className   = "branch-id";
+      idSpan.textContent = b.id;
 
-    function toggleStar(id) {
-      starred.has(id) ? starred.delete(id) : starred.add(id);
-      filterBranches();
-    }
+      const nameSpan = document.createElement("span");
+      nameSpan.className   = "branch-name";
+      nameSpan.textContent = b.name;
 
-    function selectBranch(b) {
-      selectedId = b.id;
-      document.getElementById("subtitle").textContent = `✅ เลือกแล้ว: ${b.id} — ${b.name}`;
-      document.getElementById("footerText").textContent = `${b.id} — ${b.name}`;
-      document.getElementById("footer").classList.remove("hidden");
-      filterBranches();
-    }
+      btn.appendChild(starBtn);
+      btn.appendChild(idSpan);
+      btn.appendChild(nameSpan);
 
-    function confirmSelection() {
-      const b = branches.find(x => x.id === selectedId);
-      if (b) alert(`✅ ยืนยันสาขา:\n${b.id} — ${b.name}`);
-    }
+      if (!b.fileId) {
+        const badge = document.createElement("span");
+        badge.className   = "no-link-badge";
+        badge.textContent = "⚠ ยังไม่มีรูป";
+        btn.appendChild(badge);
+      }
 
-    renderGrid(branches);
-  </script>
+      grid.appendChild(btn);
+    });
+  }
+
+  function filterBranches() {
+    const q = document.getElementById("searchInput").value.toLowerCase();
+    renderGrid(branches.filter(b =>
+      String(b.id).includes(q) || b.name.toLowerCase().includes(q)
+    ));
+  }
+
+  function toggleStar(id) {
+    starred.has(id) ? starred.delete(id) : starred.add(id);
+    filterBranches();
+  }
+
+  function openModal(b) {
+    document.getElementById("modalName").textContent = b.name;
+    document.getElementById("modalId").textContent   = `รหัสสาขา: ${b.id}`;
+    document.getElementById("modalLink").href        = viewUrl(b.fileId);
+
+    // reset image area
+    const wrap = document.getElementById("modalImgWrap");
+    wrap.innerHTML = `<span class="modal-loading">กำลังโหลด...</span>`;
+
+    const img = document.createElement("img");
+    img.className = "modal-img";
+    img.alt = "QR Code";
+    img.onload  = () => { wrap.innerHTML = ""; wrap.appendChild(img); };
+    img.onerror = () => { wrap.innerHTML = `<span class="modal-loading">⚠ โหลดรูปไม่ได้ — กดปุ่มด้านล่างเพื่อเปิดใน Drive</span>`; };
+    img.src = thumbUrl(b.fileId);
+
+    document.getElementById("modal").classList.add("open");
+  }
+
+  function closeModal()        { document.getElementById("modal").classList.remove("open"); }
+  function closeModalBg(e)     { if (e.target.id === "modal") closeModal(); }
+
+  renderGrid(branches);
+</script>
 </body>
 </html>
