@@ -23,7 +23,7 @@
       border-radius: 20px;
       padding: 28px 32px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.10);
-      max-width: 740px;
+      max-width: 780px;
       width: 100%;
     }
 
@@ -35,18 +35,8 @@
     }
 
     .header-icon { font-size: 36px; }
-
-    .title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 4px;
-    }
+    .title { font-size: 20px; font-weight: 700; color: #1e293b; }
+    .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
 
     .search {
       width: 100%;
@@ -66,37 +56,39 @@
       gap: 10px;
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 560px) {
       .grid { grid-template-columns: repeat(2, 1fr); }
     }
 
-    .btn {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 12px 14px 12px 36px;
+    /* Card แต่ละสาขา */
+    .branch-card {
       border-radius: 14px;
       border: 1.5px solid #e2e8f0;
       background: #f8fafc;
+      overflow: hidden;
+      transition: all 0.15s ease;
+    }
+
+    .branch-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .branch-card.starred { border: 1.5px solid #fcd34d; background: #fffef5; }
+    .branch-card.no-link { opacity: 0.5; }
+
+    /* ปุ่มหลัก — กดแล้วเปิดลิงก์ */
+    .btn-main {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 12px 14px 10px 36px;
+      width: 100%;
+      background: none;
+      border: none;
       cursor: pointer;
       text-align: left;
-      transition: all 0.15s ease;
-      outline: none;
       font-family: 'Sarabun', sans-serif;
+      position: relative;
     }
 
-    .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-
-    .btn.starred:not(.selected) {
-      border: 1.5px solid #fcd34d;
-      background: #fffef5;
-    }
-
-    .btn.no-link {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .btn-main:disabled { cursor: not-allowed; }
 
     .star-btn {
       position: absolute;
@@ -106,125 +98,67 @@
       border: none;
       font-size: 16px;
       cursor: pointer;
-      padding: 0;
-      line-height: 1;
       color: #d1d5db;
       transition: color 0.15s;
+      line-height: 1;
     }
-
     .star-btn.on { color: #f59e0b; }
 
-    .branch-id {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1e293b;
-      line-height: 1.3;
-    }
+    .branch-id   { font-size: 15px; font-weight: 700; color: #1e293b; line-height: 1.3; }
+    .branch-name { font-size: 11px; color: #64748b; margin-top: 2px; line-height: 1.4; }
+    .no-link-badge { font-size: 10px; color: #ef4444; margin-top: 3px; }
 
-    .branch-name {
-      font-size: 11px;
-      color: #64748b;
-      margin-top: 2px;
-      line-height: 1.4;
-    }
-
-    .no-link-badge {
-      font-size: 10px;
-      color: #ef4444;
-      margin-top: 3px;
-    }
-
-    /* Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.72);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-overlay.open { display: flex; }
-
-    .modal-box {
-      background: #fff;
-      border-radius: 20px;
-      padding: 24px;
-      max-width: 480px;
-      width: 90%;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      animation: popIn 0.2s ease;
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.92); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 14px;
-      right: 16px;
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: #64748b;
-    }
-
-    .modal-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-
-    .modal-id {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 16px;
-    }
-
-    .modal-img-wrap {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      margin-bottom: 16px;
-      background: #f8fafc;
-      min-height: 180px;
+    /* Footer ของ card — ปุ่ม copy */
+    .card-footer {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px 8px 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .link-text {
+      font-size: 10px;
+      color: #94a3b8;
+      flex: 1;
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .modal-img {
-      width: 100%;
-      max-height: 340px;
-      object-fit: contain;
-      border-radius: 12px;
-    }
-
-    .modal-loading { color: #94a3b8; font-size: 14px; }
-
-    .modal-open-btn {
-      display: inline-block;
-      padding: 10px 24px;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
+    .copy-btn {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
       font-family: 'Sarabun', sans-serif;
       cursor: pointer;
-      text-decoration: none;
+      color: #475569;
+      white-space: nowrap;
+      transition: all 0.15s;
     }
 
-    .modal-open-btn:hover { background: #1d4ed8; }
+    .copy-btn:hover { background: #e2e8f0; }
+    .copy-btn.copied { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -234,7 +168,7 @@
     <span class="header-icon">🏪</span>
     <div>
       <div class="title">เลือกสาขาที่ต้องดูแลพิเศษ</div>
-      <div class="subtitle">กดที่สาขาเพื่อดูรูปภาพ QR Code</div>
+      <div class="subtitle">กดที่สาขาเพื่อเปิดลิงก์ • กด Copy เพื่อคัดลอก URL</div>
     </div>
   </div>
 
@@ -243,82 +177,108 @@
   <div class="grid" id="grid"></div>
 </div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modal" onclick="closeModalBg(event)">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title" id="modalName"></div>
-    <div class="modal-id"   id="modalId"></div>
-    <div class="modal-img-wrap" id="modalImgWrap">
-      <span class="modal-loading">กำลังโหลด...</span>
-    </div>
-    <a class="modal-open-btn" id="modalLink" href="#" target="_blank">🔗 เปิดใน Google Drive</a>
-  </div>
-</div>
+<div class="toast" id="toast">📋 คัดลอกลิงก์แล้ว!</div>
 
 <script>
   const branches = [
-    { id: 85,    name: "สรรพาวุธ-บางนา (KS)",                   fileId: "1dIVsZ3ylK-F4uRhOyJvQOQbdncxYF_in" },
-    { id: 419,   name: "มอลทาเล่ย์",                             fileId: "18VmgNqpgrTlC1pc_uYCg4EDmAW_yujbT" },
-    { id: 5552,  name: "คลองสวน",                                fileId: "1Bmv8yNPYsERWNq9NnSQuYHXoPOhIoY3P" },
-    { id: 5605,  name: "สุภาพงษ์1-3 แยก 3",                     fileId: "1Nfw9vLqw5xPOBM6Q7_3Lo9bkruWhhrh7" },
-    { id: 8789,  name: "ม.เมืองแก้ว",                           fileId: "1Uw-XFF-nwjZkBSizg2vxYVVuIWV_jZ8U" },
-    { id: 9687,  name: "ตลาดทรัพย์บุญชัย",                      fileId: "1___hPDBGgG04-6dEZiWJ_mL-1VlcRoE5" },
-    { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)",         fileId: "1NqjSY2NP2cFTq3CEnFUDUcQnyZGn5ie8" },
-    { id: 13327, name: "สุขุมวิท 64 จุด 2",                     fileId: null },
-    { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)",                fileId: "1IO9M_zi0wjpesOAuhCLsPOACkW9EQjV6" },
-    { id: 13544, name: "ลาดกระบัง 14 / 1",                      fileId: "1F95Ar35yyxFFXxvjfNj2O5NKi7Xqyiel" },
-    { id: 14748, name: "กลางซอยศรีด่าน 22",                     fileId: "12-bUtvMZaPLI4i_iDzCHTc-7KzX03y_U" },
-    { id: 15100, name: "อ่อนนุช 30 (กลางซอย)",                  fileId: "1sO8tvgSVYgd5pEuMtbjnF4WCX6WN3nNH" },
-    { id: 16070, name: "อ่อนนุช 46 (กลางซอย)",                  fileId: "1kNkok0iYZtB6P2Padauw_kozrFMRNgcM" },
-    { id: 16864, name: "พัฒนาการ 44",                            fileId: "1gUDqof2VITFN6mJac9QBhrnP_lHFDhwm" },
-    { id: 17196, name: "สวนส้ม จุด 2",                          fileId: "1ujNmWE1cF-v2ClSV0Kk2wMP9ASvdXnz1" },
-    { id: 18232, name: "ปุณณวิถี 25",                            fileId: "1VbF3VnDbSBtcVidA9iRqNOE_SSZQDDTk" },
-    { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2",              fileId: "1ibPaTLMbNsuLIyxeC2QJq2U1TmmCdnDo" },
-    { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน", fileId: "1As0xnGS4y2Pq8UAIn7I29aEqFQ8H1G4K" },
-    { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)",      fileId: "11YdSslRQmEPdktb34hiqaY5LKCmdGLmB" },
-    { id: 19243, name: "ซอยสุนทรวิภาค จุด 2",                   fileId: "17gbc5FGGPvDXkXcv4sNIAKcAuSqNZv3Z" },
+    { id: 85,    name: "สรรพาวุธ-บางนา (KS)",                   url: "https://allonline.link/r/kDWa1" },
+    { id: 419,   name: "มอลทาเล่ย์",                             url: "https://allonline.link/r/ArR0W" },
+    { id: 5552,  name: "คลองสวน",                                url: "https://allonline.link/r/OYDAb" },
+    { id: 5605,  name: "สุภาพงษ์1-3 แยก 3",                     url: "https://allonline.link/r/ZP1qR" },
+    { id: 8789,  name: "ม.เมืองแก้ว",                           url: "https://allonline.link/r/YPXDV" },
+    { id: 9687,  name: "ตลาดทรัพย์บุญชัย",                      url: "https://allonline.link/r/wwRDa" },
+    { id: 12016, name: "บางนาตราด ซ.23(โครงการ Bizzo)",         url: "https://allonline.link/r/MWM07" },
+    { id: 13327, name: "สุขุมวิท 64 จุด 2",                     url: null },
+    { id: 13401, name: "สตูดิโอแมทชิ่ง(บางบ่อ)",                url: "https://allonline.link/r/dklLo" },
+    { id: 13544, name: "ลาดกระบัง 14 / 1",                      url: "https://allonline.link/r/D9708" },
+    { id: 14748, name: "กลางซอยศรีด่าน 22",                     url: "https://allonline.link/r/qqMoa" },
+    { id: 15100, name: "อ่อนนุช 30 (กลางซอย)",                  url: "https://allonline.link/r/mw0KG" },
+    { id: 16070, name: "อ่อนนุช 46 (กลางซอย)",                  url: "https://allonline.link/r/pDw33" },
+    { id: 16864, name: "พัฒนาการ 44",                            url: "https://allonline.link/r/RRp0L" },
+    { id: 17196, name: "สวนส้ม จุด 2",                          url: "https://allonline.link/r/Gbn0L" },
+    { id: 18232, name: "ปุณณวิถี 25",                            url: "https://allonline.link/r/xMGqw" },
+    { id: 18562, name: "ม.ชลดา(ศรีวารีน้อย)จุด2",              url: "https://allonline.link/r/70Q86" },
+    { id: 18645, name: "ม.สินทวีกรีนวิลล์ อยู่เจริญ คลองสวน", url: "https://allonline.link/r/VKjYo" },
+    { id: 18813, name: "บางนาตราด กม.24 (ซอยเก็บทรัพย์)",      url: "https://allonline.link/r/wwRDP" },
+    { id: 19243, name: "ซอยสุนทรวิภาค จุด 2",                   url: "https://allonline.link/r/MWM0V" },
   ];
 
   const starred = new Set([5605, 18232]);
 
-  function thumbUrl(id) { return `https://drive.google.com/thumbnail?id=${id}&sz=w600`; }
-  function viewUrl(id)  { return `https://drive.google.com/file/d/${id}/view`; }
-
   function renderGrid(list) {
     const grid = document.getElementById("grid");
     grid.innerHTML = "";
+
     list.forEach(b => {
       const isStarred = starred.has(b.id);
-      const btn = document.createElement("button");
-      btn.className = "btn" + (isStarred ? " starred" : "") + (!b.fileId ? " no-link" : "");
-      if (b.fileId) btn.onclick = () => openModal(b);
+
+      // wrapper card
+      const card = document.createElement("div");
+      card.className = "branch-card" + (isStarred ? " starred" : "") + (!b.url ? " no-link" : "");
+
+      // ── ปุ่มหลัก ──
+      const btnMain = document.createElement("button");
+      btnMain.className = "btn-main";
+      if (b.url) btnMain.onclick = () => window.open(b.url, "_blank");
+      else btnMain.disabled = true;
 
       const starBtn = document.createElement("button");
       starBtn.className = "star-btn" + (isStarred ? " on" : "");
       starBtn.textContent = "★";
       starBtn.onclick = (e) => { e.stopPropagation(); toggleStar(b.id); };
 
-      const idSpan   = document.createElement("span");
-      idSpan.className   = "branch-id";
+      const idSpan = document.createElement("span");
+      idSpan.className = "branch-id";
       idSpan.textContent = b.id;
 
       const nameSpan = document.createElement("span");
-      nameSpan.className   = "branch-name";
+      nameSpan.className = "branch-name";
       nameSpan.textContent = b.name;
 
-      btn.appendChild(starBtn);
-      btn.appendChild(idSpan);
-      btn.appendChild(nameSpan);
+      btnMain.appendChild(starBtn);
+      btnMain.appendChild(idSpan);
+      btnMain.appendChild(nameSpan);
 
-      if (!b.fileId) {
+      if (!b.url) {
         const badge = document.createElement("span");
-        badge.className   = "no-link-badge";
-        badge.textContent = "⚠ ยังไม่มีรูป";
-        btn.appendChild(badge);
+        badge.className = "no-link-badge";
+        badge.textContent = "⚠ ยังไม่มีลิงก์";
+        btnMain.appendChild(badge);
       }
 
-      grid.appendChild(btn);
+      card.appendChild(btnMain);
+
+      // ── footer: link text + copy btn ──
+      if (b.url) {
+        const footer = document.createElement("div");
+        footer.className = "card-footer";
+
+        const linkText = document.createElement("span");
+        linkText.className = "link-text";
+        linkText.textContent = b.url;
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "copy-btn";
+        copyBtn.textContent = "📋 Copy";
+        copyBtn.onclick = (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(b.url).then(() => {
+            copyBtn.textContent = "✅ Copied!";
+            copyBtn.classList.add("copied");
+            showToast();
+            setTimeout(() => {
+              copyBtn.textContent = "📋 Copy";
+              copyBtn.classList.remove("copied");
+            }, 2000);
+          });
+        };
+
+        footer.appendChild(linkText);
+        footer.appendChild(copyBtn);
+        card.appendChild(footer);
+      }
+
+      grid.appendChild(card);
     });
   }
 
@@ -334,27 +294,13 @@
     filterBranches();
   }
 
-  function openModal(b) {
-    document.getElementById("modalName").textContent = b.name;
-    document.getElementById("modalId").textContent   = `รหัสสาขา: ${b.id}`;
-    document.getElementById("modalLink").href        = viewUrl(b.fileId);
-
-    // reset image area
-    const wrap = document.getElementById("modalImgWrap");
-    wrap.innerHTML = `<span class="modal-loading">กำลังโหลด...</span>`;
-
-    const img = document.createElement("img");
-    img.className = "modal-img";
-    img.alt = "QR Code";
-    img.onload  = () => { wrap.innerHTML = ""; wrap.appendChild(img); };
-    img.onerror = () => { wrap.innerHTML = `<span class="modal-loading">⚠ โหลดรูปไม่ได้ — กดปุ่มด้านล่างเพื่อเปิดใน Drive</span>`; };
-    img.src = thumbUrl(b.fileId);
-
-    document.getElementById("modal").classList.add("open");
+  let toastTimer;
+  function showToast() {
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
   }
-
-  function closeModal()        { document.getElementById("modal").classList.remove("open"); }
-  function closeModalBg(e)     { if (e.target.id === "modal") closeModal(); }
 
   renderGrid(branches);
 </script>
